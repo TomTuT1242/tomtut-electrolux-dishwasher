@@ -1,6 +1,6 @@
 {
   "domain": "electrolux_dishwasher",
-  "name": "Electrolux/AEG Dishwasher",
+  "name": "TomTuT Electrolux/AEG Dishwasher",
   "codeowners": ["@TomTuT1242"],
   "config_flow": true,
   "dependencies": [],
