@@ -4,8 +4,6 @@ import logging
 import shutil
 from pathlib import Path
 
-from homeassistant.components.frontend import async_register_built_in_panel
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -21,30 +19,24 @@ PLATFORMS = ["sensor", "binary_sensor", "button"]
 CARD_JS = "tomtut-dishwasher-card.js"
 CARD_DIR = "tomtut-dishwasher"
 CARD_URL = f"/local/{CARD_JS}"
-IMAGES_URL = f"/local/{CARD_DIR}"
 
 
-async def _deploy_frontend(hass: HomeAssistant) -> None:
-    """Copy card JS and images to www/ so they are served by HA."""
-    www_dir = Path(hass.config.path("www"))
+def _deploy_frontend_sync(config_path: str) -> None:
+    """Copy card JS and images to www/ (runs in executor thread)."""
+    www_dir = Path(config_path) / "www"
     www_dir.mkdir(exist_ok=True)
 
-    integration_dir = Path(__file__).parent
-    frontend_dir = integration_dir / "frontend"
-
+    frontend_dir = Path(__file__).parent / "frontend"
     if not frontend_dir.exists():
-        _LOGGER.debug("No frontend directory found, skipping card deployment")
         return
 
-    # Copy card JS
     card_src = frontend_dir / CARD_JS
     card_dst = www_dir / CARD_JS
     if card_src.exists():
         if not card_dst.exists() or card_src.stat().st_mtime > card_dst.stat().st_mtime:
             shutil.copy2(card_src, card_dst)
-            _LOGGER.info("Deployed %s to %s", CARD_JS, card_dst)
+            _LOGGER.info("Deployed %s", CARD_JS)
 
-    # Copy images
     images_src = frontend_dir / "images"
     images_dst = www_dir / CARD_DIR
     if images_src.exists():
@@ -55,29 +47,25 @@ async def _deploy_frontend(hass: HomeAssistant) -> None:
                 shutil.copy2(img, dst)
                 _LOGGER.info("Deployed image %s", img.name)
 
-    # Register card as Lovelace resource
-    await _register_card_resource(hass)
-
 
 async def _register_card_resource(hass: HomeAssistant) -> None:
-    """Register the card JS as a Lovelace resource if not already registered."""
+    """Register the card JS as a Lovelace resource."""
     try:
-        resources = hass.data.get("lovelace", {}).get("resources")
+        lr = hass.data.get("lovelace", {})
+        resources = getattr(lr, "resources", None) if not isinstance(lr, dict) else lr.get("resources")
         if resources is None:
+            _LOGGER.debug("Lovelace resources not available, skipping auto-register")
             return
 
-        # Check if already registered
         existing = await resources.async_get_items() if hasattr(resources, "async_get_items") else []
         for item in existing:
-            if CARD_JS in item.get("url", ""):
-                _LOGGER.debug("Card resource already registered")
+            if CARD_JS in str(item.get("url", "")):
                 return
 
-        # Register
         await resources.async_create_item({"res_type": "module", "url": CARD_URL})
         _LOGGER.info("Registered Lovelace resource: %s", CARD_URL)
     except Exception as err:
-        _LOGGER.debug("Could not auto-register card resource: %s (register manually via UI)", err)
+        _LOGGER.debug("Could not auto-register card: %s", err)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -99,8 +87,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # Deploy card + images to www/
-    await _deploy_frontend(hass)
+    # Deploy card + images (non-blocking)
+    await hass.async_add_executor_job(_deploy_frontend_sync, hass.config.path())
+    await _register_card_resource(hass)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
