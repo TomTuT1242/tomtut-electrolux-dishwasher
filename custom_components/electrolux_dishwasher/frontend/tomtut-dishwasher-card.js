@@ -124,35 +124,97 @@ class TomtutDishwasherCard extends HTMLElement {
   }
 
   static getStubConfig() {
-    return {
-      entity_state: "",
-      entity_phase: "",
-      entity_program: "",
-      entity_time: "",
-      entity_door: "",
-      entity_running: "",
-      entity_salt: "",
-      entity_rinse_aid: "",
-      entity_power: "",
-      button_on: "",
-      button_off: "",
-      button_start: "",
-      button_pause: "",
-      button_resume: "",
-      button_stopreset: "",
-    };
+    return {};
   }
 
   setConfig(config) {
-    if (!config.entity_state) throw new Error("entity_state is required");
+    // entity_state not required anymore — auto-discover fills it
     this._config = { ...config };
+    this._autoDiscovered = false;
     this._render();
+  }
+
+  _autoDiscover(hass) {
+    if (this._autoDiscovered) return;
+    this._autoDiscovered = true;
+
+    // Find entities from the electrolux_dishwasher integration
+    const allIds = Object.keys(hass.states);
+    const find = (prefix, suffix) => {
+      // First try configured value
+      const configKey = `entity_${suffix.replace("binary_", "")}`;
+      if (this._config[configKey]) return;
+      // Auto-discover: find entity matching pattern
+      const match = allIds.find(id =>
+        id.startsWith(prefix) && id.includes("geschirrspulmaschine") && id.includes(suffix)
+      ) || allIds.find(id =>
+        id.startsWith(prefix) && id.includes("spulmaschine") && id.includes(suffix)
+      ) || allIds.find(id =>
+        id.startsWith(prefix) && id.includes("dishwasher") && id.includes(suffix)
+      );
+      if (match) this._config[`entity_${suffix.replace("binary_", "")}`] = match;
+    };
+
+    const findBtn = (suffix, configKey) => {
+      if (this._config[configKey]) return;
+      const match = allIds.find(id =>
+        id.startsWith("button.") && id.includes("geschirrspulmaschine") && id.includes(suffix)
+      ) || allIds.find(id =>
+        id.startsWith("button.") && id.includes("spulmaschine") && id.includes(suffix)
+      ) || allIds.find(id =>
+        id.startsWith("button.") && id.includes("dishwasher") && id.includes(suffix)
+      );
+      if (match) this._config[configKey] = match;
+    };
+
+    // Auto-discover sensors
+    if (!this._config.entity_state) {
+      const s = allIds.find(id => id.startsWith("sensor.") && id.includes("spulmaschine") && id.endsWith("_status"));
+      if (s) this._config.entity_state = s;
+    }
+    if (!this._config.entity_phase) {
+      const s = allIds.find(id => id.startsWith("sensor.") && id.includes("spulmaschine") && id.endsWith("_phase"));
+      if (s) this._config.entity_phase = s;
+    }
+    if (!this._config.entity_program) {
+      const s = allIds.find(id => id.startsWith("sensor.") && id.includes("spulmaschine") && id.endsWith("_programm"));
+      if (s) this._config.entity_program = s;
+    }
+    if (!this._config.entity_time) {
+      const s = allIds.find(id => id.startsWith("sensor.") && id.includes("spulmaschine") && id.endsWith("_restzeit"));
+      if (s) this._config.entity_time = s;
+    }
+    if (!this._config.entity_door) {
+      const s = allIds.find(id => id.startsWith("binary_sensor.") && id.includes("spulmaschine") && id.endsWith("_tur"));
+      if (s) this._config.entity_door = s;
+    }
+    if (!this._config.entity_running) {
+      const s = allIds.find(id => id.startsWith("binary_sensor.") && id.includes("spulmaschine") && id.endsWith("_lauft"));
+      if (s) this._config.entity_running = s;
+    }
+    if (!this._config.entity_salt) {
+      const s = allIds.find(id => id.startsWith("binary_sensor.") && id.includes("spulmaschine") && id.endsWith("_salz_fehlt"));
+      if (s) this._config.entity_salt = s;
+    }
+    if (!this._config.entity_rinse_aid) {
+      const s = allIds.find(id => id.startsWith("binary_sensor.") && id.includes("spulmaschine") && id.endsWith("_klarspuler_niedrig"));
+      if (s) this._config.entity_rinse_aid = s;
+    }
+
+    // Auto-discover buttons
+    findBtn("einschalten", "button_on");
+    findBtn("ausschalten", "button_off");
+    findBtn("_start", "button_start");
+    findBtn("_pause", "button_pause");
+    findBtn("fortsetzen", "button_resume");
+    findBtn("stop_reset", "button_stopreset");
   }
 
   set hass(hass) {
     const oldHass = this._hass;
     this._hass = hass;
     if (this._config) {
+      this._autoDiscover(hass);
       const keys = [
         "entity_state", "entity_phase", "entity_program", "entity_time",
         "entity_door", "entity_running", "entity_salt", "entity_rinse_aid",
