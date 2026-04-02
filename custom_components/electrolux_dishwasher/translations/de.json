@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AEG/Electrolux Login",
+        "description": "Gib deine AEG/Electrolux Account E-Mail ein. Du bekommst einen Verifizierungscode per E-Mail.",
+        "data": {
+          "email": "E-Mail"
+        }
+      },
+      "otp": {
+        "title": "Verifizierungscode",
+        "description": "Ein Code wurde an {email} gesendet. Gib ihn hier ein.",
+        "data": {
+          "code": "Code"
+        }
+      },
+      "select_appliance": {
+        "title": "Geschirrspüler auswählen",
+        "data": {
+          "appliance_id": "Gerät"
+        }
+      }
+    },
+    "error": {
+      "otp_failed": "OTP-Code konnte nicht gesendet werden",
+      "auth_failed": "Authentifizierung fehlgeschlagen",
+      "no_dishwasher": "Kein Geschirrspüler im Account gefunden"
+    }
+  }
+}

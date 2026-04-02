@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment
+.env
+.DS_Store
+
+# Private / Development only
+mitm/
+apk/
+docs/appliance-state.json
+docs/capabilities.json
+dashboard/
+STARTUP_PROMPT.md
+CLAUDE.md
+.claude/
+
+# Card development
+card/images/Spuelmaschine-*

@@ -1,0 +1,12 @@
+{
+  "domain": "electrolux_dishwasher",
+  "name": "Electrolux/AEG Dishwasher",
+  "codeowners": ["@TomTuT1242"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/TomTuT1242/tomtut-electrolux-dishwasher",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/TomTuT1242/tomtut-electrolux-dishwasher/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

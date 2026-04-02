@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AEG/Electrolux Login",
+        "description": "Enter your AEG/Electrolux account email. You will receive a verification code by email.",
+        "data": {
+          "email": "Email"
+        }
+      },
+      "otp": {
+        "title": "Verification Code",
+        "description": "A code was sent to {email}. Enter it here.",
+        "data": {
+          "code": "Code"
+        }
+      },
+      "select_appliance": {
+        "title": "Select Dishwasher",
+        "data": {
+          "appliance_id": "Appliance"
+        }
+      }
+    },
+    "error": {
+      "otp_failed": "Failed to send OTP code",
+      "auth_failed": "Authentication failed",
+      "no_dishwasher": "No dishwasher found in account"
+    }
+  }
+}
