@@ -1,5 +1,5 @@
 /**
- * TomTuT Dishwasher Card v1.1.0
+ * TomTuT Dishwasher Card v1.2.0
  * A Home Assistant Lovelace custom card for monitoring dishwasher status
  * with status-dependent images, animated overlays, power display, and controls.
  *
@@ -397,7 +397,7 @@ class TomtutDishwasherCard extends HTMLElement {
       <style>${TomtutDishwasherCard._styles()}</style>
       <ha-card>
         <div class="card-container">
-          <div class="image-wrapper">
+          <div class="image-wrapper" style="${this._config.image_height ? `height:${this._config.image_height}px` : ""}">
             <img class="dish-image" src="${imageSrc}" alt="Geschirrspülmaschine" />
             ${runningOverlayHtml}
           </div>
@@ -450,11 +450,13 @@ class TomtutDishwasherCard extends HTMLElement {
         position: relative;
         width: 100%;
         line-height: 0;
+        overflow: hidden;
       }
 
       .dish-image {
         width: 100%;
-        height: auto;
+        height: 100%;
+        object-fit: cover;
         display: block;
         transition: opacity 0.8s ease-in-out;
       }
@@ -682,7 +684,7 @@ window.customCards.push({
 });
 
 console.info(
-  "%c TOMTUT-DISHWASHER-CARD %c v1.1.0 ",
+  "%c TOMTUT-DISHWASHER-CARD %c v1.2.0 ",
   "color: white; background: #4CAF50; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;",
   "color: #4CAF50; background: #1c1c1e; font-weight: bold; padding: 2px 6px; border-radius: 0 4px 4px 0;"
 );
