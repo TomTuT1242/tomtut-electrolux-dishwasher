@@ -1,5 +1,5 @@
 /**
- * TomTuT Dishwasher Card v1.2.1
+ * TomTuT Dishwasher Card v1.2.2
  * A Home Assistant Lovelace custom card for monitoring dishwasher status
  * with status-dependent images, animated overlays, power display, and controls.
  *
@@ -393,7 +393,7 @@ class TomtutDishwasherCard extends HTMLElement {
       <style>${TomtutDishwasherCard._styles()}</style>
       <ha-card>
         <div class="card-container">
-          <div class="image-wrapper" style="${this._config.image_height ? `height:${this._config.image_height}px` : ""}">
+          <div class="image-wrapper" style="${this._config.image_height ? `height:${parseInt(this._config.image_height)}px` : ""}">
             <img class="dish-image" src="${imageSrc}" alt="Geschirrspülmaschine" />
             ${runningOverlayHtml}
           </div>
@@ -583,13 +583,16 @@ class TomtutDishwasherCard extends HTMLElement {
         background: #2c2c2e;
         border-top: 1px solid rgba(255,255,255,0.06);
         gap: 8px;
+        flex-wrap: wrap;
       }
 
       .control-left {
         display: flex;
         align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
+        gap: 6px;
+        flex-wrap: wrap;
+        flex-shrink: 1;
+        min-width: 0;
       }
 
       .warning-badge {
@@ -622,7 +625,8 @@ class TomtutDishwasherCard extends HTMLElement {
 
       .ctrl-buttons {
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        flex-shrink: 0;
       }
 
       .ctrl-btn {
@@ -680,7 +684,7 @@ window.customCards.push({
 });
 
 console.info(
-  "%c TOMTUT-DISHWASHER-CARD %c v1.2.1 ",
+  "%c TOMTUT-DISHWASHER-CARD %c v1.2.2 ",
   "color: white; background: #4CAF50; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;",
   "color: #4CAF50; background: #1c1c1e; font-weight: bold; padding: 2px 6px; border-radius: 0 4px 4px 0;"
 );
